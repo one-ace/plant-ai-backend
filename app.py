@@ -24,7 +24,7 @@ app = Flask(__name__)
 
 # Load model
 model = get_model()
-model.load_state_dict(torch.load("plant_model.pth", map_location="cpu"))
+model.load_state_dict(torch.load("plant_model.pth", map_location="cpu", weights_only=False))
 model.eval()
 
 # Transform (same as validation!)
