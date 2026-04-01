@@ -1,18 +1,33 @@
 import os
 import requests
 
+def download_file_from_google_drive(file_id, destination):
+    URL = "https://drive.google.com/uc?export=download"
+    
+    session = requests.Session()
+    response = session.get(URL, params={"id": file_id}, stream=True)
+    
+    for key, value in response.cookies.items():
+        if key.startswith("download_warning"):
+            params = {"id": file_id, "confirm": value}
+            response = session.get(URL, params=params, stream=True)
+            break
+
+    with open(destination, "wb") as f:
+        for chunk in response.iter_content(8192):
+            if chunk:
+                f.write(chunk)
+
+
 MODEL_PATH = "plant_model.pth"
 
 if not os.path.exists(MODEL_PATH):
     print("Downloading model...")
-    url = "https://drive.google.com/uc?id=1TaKh33MEPRRdIK-i3K0JbwjJHg_E6c4m"
-    
-    r = requests.get(url)
-    with open(MODEL_PATH, "wb") as f:
-        f.write(r.content)
-
+    download_file_from_google_drive(
+        "1TaKh33MEPRRdIK-i3K0JbwjJHg_E6c4m",
+        MODEL_PATH
+    )
     print("Model downloaded successfully!")
-
 
 from flask import Flask, request, jsonify
 import torch
