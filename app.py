@@ -1,3 +1,19 @@
+import os
+import requests
+
+MODEL_PATH = "plant_model.pth"
+
+if not os.path.exists(MODEL_PATH):
+    print("Downloading model...")
+    url = "https://drive.google.com/uc?id=1TaKh33MEPRRdIK-i3K0JbwjJHg_E6c4m"
+    
+    r = requests.get(url)
+    with open(MODEL_PATH, "wb") as f:
+        f.write(r.content)
+
+    print("Model downloaded successfully!")
+
+
 from flask import Flask, request, jsonify
 import torch
 from PIL import Image
