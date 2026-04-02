@@ -15,6 +15,8 @@ if not os.path.exists(MODEL_PATH):
 
     print("Model downloaded successfully!")
     print("File size:", os.path.getsize(MODEL_PATH))
+
+
 from flask import Flask, request, jsonify
 import torch
 from PIL import Image
@@ -23,18 +25,26 @@ from model import get_model
 
 app = Flask(__name__)
 
-# Load model
-model = get_model()
-model.load_state_dict(torch.load("plant_model.pth", map_location="cpu", weights_only=False))
-model.eval()
+model = None
 
-# Transform (same as validation!)
+def load_model():
+    global model
+    model = get_model()
+    model.load_state_dict(torch.load(MODEL_PATH, map_location="cpu", weights_only=False))
+    model.eval()
+    print("Model loaded successfully!")
+
+# Load model AFTER download
+load_model()
+
+
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
     transforms.Normalize([0.485, 0.456, 0.406],
                          [0.229, 0.224, 0.225])
 ])
+
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -51,9 +61,11 @@ def predict():
 
     return jsonify({"status": result})
 
+
 @app.route("/")
 def home():
     return "AI Plant Model Running 🚀"
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
