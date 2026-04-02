@@ -1,34 +1,20 @@
 import os
 import requests
 
-def download_file_from_google_drive(file_id, destination):
-    URL = "https://drive.google.com/uc?export=download"
-    
-    session = requests.Session()
-    response = session.get(URL, params={"id": file_id}, stream=True)
-    
-    for key, value in response.cookies.items():
-        if key.startswith("download_warning"):
-            params = {"id": file_id, "confirm": value}
-            response = session.get(URL, params=params, stream=True)
-            break
-
-    with open(destination, "wb") as f:
-        for chunk in response.iter_content(8192):
-            if chunk:
-                f.write(chunk)
-
-
 MODEL_PATH = "plant_model.pth"
 
 if not os.path.exists(MODEL_PATH):
     print("Downloading model...")
-    download_file_from_google_drive(
-        "1TaKh33MEPRRdIK-i3K0JbwjJHg_E6c4m",
-        MODEL_PATH
-    )
-    print("Model downloaded successfully!")
+    url = "https://huggingface.co/szzw/plant-ai-model/resolve/main/plant_model.pth"
+    
+    r = requests.get(url, stream=True)
+    with open(MODEL_PATH, "wb") as f:
+        for chunk in r.iter_content(8192):
+            if chunk:
+                f.write(chunk)
 
+    print("Model downloaded successfully!")
+    print("File size:", os.path.getsize(MODEL_PATH))
 from flask import Flask, request, jsonify
 import torch
 from PIL import Image
